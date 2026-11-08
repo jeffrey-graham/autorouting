@@ -448,9 +448,20 @@ export class MultilayerIjump extends GeneralizedAstarAutorouter {
           Math.sign(goalPoint.x - node.x) === travelDir.dx) &&
         (travelDir.dy === 0 || Math.sign(goalPoint.y - node.y) === travelDir.dy)
 
+      const isForwardDir =
+        Boolean(node.parent) &&
+        travelDir.dx === forwardDir.dx &&
+        travelDir.dy === forwardDir.dy &&
+        travelDir.dl === forwardDir.dl
+
       if (
         goalDistAlongTravelDir < travelDir.wallDistance &&
-        goalDistAlongTravelDir > 0 &&
+        goalDistAlongTravelDir >
+          (isForwardDir
+            ? this.GRID_STEP
+            : node.l === goalPoint.l
+              ? 1e-6
+              : 0) &&
         isGoalInTravelDir
       ) {
         const isGoalOnSameLayer = node.l === goalPoint.l
@@ -467,6 +478,7 @@ export class MultilayerIjump extends GeneralizedAstarAutorouter {
 
         travelDirs3.push({
           ...travelDir,
+          obstacle: null,
           travelDistance: goalDistAlongTravelDir - stopShortDistance,
           enterMarginCost: 0,
           travelMarginCostFactor: 1,
@@ -483,6 +495,7 @@ export class MultilayerIjump extends GeneralizedAstarAutorouter {
           ) {
             travelDirs3.push({
               ...travelDir,
+              obstacle: null,
               travelDistance: overcomeDistance - this.OBSTACLE_MARGIN + margin,
               enterMarginCost: enterCost,
               travelMarginCostFactor: travelCostFactor,
@@ -492,6 +505,7 @@ export class MultilayerIjump extends GeneralizedAstarAutorouter {
         if (travelDir.wallDistance === Infinity) {
           travelDirs3.push({
             ...travelDir,
+            obstacle: null,
             travelDistance: goalDistAlongTravelDir,
             enterMarginCost: 0,
             travelMarginCostFactor: 1,
